@@ -1,25 +1,26 @@
-import React, { useEffect, useState } from "react";
-import PropTypes from 'prop-types';
+import React, {useEffect, useState} from 'react';
 import {FlatList} from 'react-native';
+import {baseUrl} from '../utils/variables';
 import ListItem from './ListItem';
 
 const List = (props) => {
   const [mediaArray, setMediaArray] = useState([]);
-  const url = 'https://raw.githubusercontent.com/mattpe/wbma/master/docs/assets/test.json';
+  const url = baseUrl + 'media';
 
-   useEffect(() => {
-     const loadMedia = async () => {
-       try {
+  useEffect(() => {
+    const loadMedia = async () => {
+      try {
         const response = await fetch(url);
         const json = await response.json();
         setMediaArray(json);
-       } catch (e) {
-         console.log(e.message);
-       }
-     };
-     loadMedia();
-   }, [])
+      } catch (e) {
+        console.log(e.message);
+      }
+    };
+    loadMedia();
+  }, []);
 
+  console.log('List rivi 23', mediaArray);
   return (
     <FlatList
       data={mediaArray}
@@ -28,7 +29,5 @@ const List = (props) => {
     />
   );
 };
-
-List.propTypes = {};
 
 export default List;
