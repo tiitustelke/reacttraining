@@ -1,38 +1,25 @@
-import React, {useEffect, useState} from 'react';
+import React from 'react';
 import {FlatList} from 'react-native';
-import {baseUrl} from '../utils/variables';
+import {useMedia} from '../hooks/ApiHooks';
 import ListItem from './ListItem';
+import PropTypes from 'prop-types';
 
-const List = (props) => {
-  const [mediaArray, setMediaArray] = useState([]);
-  const url = baseUrl + 'media';
-
-  useEffect(() => {
-    const loadMedia = async () => {
-      try {
-        const response = await fetch(url);
-        const mediaIlmanThumbnailia = await response.json();
-        const kaikkiTiedot = mediaIlmanThumbnailia.map(async (media) => {
-          const response = await fetch(baseUrl + 'media/' + media.file_id);
-          const tiedosto = await response.json();
-          return tiedosto;
-        });
-        setMediaArray(await Promise.all(kaikkiTiedot));
-      } catch (e) {
-        console.log(e.message);
-      }
-    };
-    loadMedia();
-  }, []);
-
-  console.log('List rivi 23', mediaArray);
+const List = ({navigation}) => {
+  const {mediaArray} = useMedia();
+  console.log('List: mediaArray', mediaArray);
   return (
     <FlatList
       data={mediaArray}
-      renderItem={({item}) => <ListItem singleMedia={item} />}
+      renderItem={({item}) => (
+        <ListItem singleMedia={item} navigation={navigation} />
+      )}
       keyExtractor={(item, index) => index.toString()}
     />
   );
+};
+
+List.propTypes = {
+  navigation: PropTypes.object.isRequired,
 };
 
 export default List;
