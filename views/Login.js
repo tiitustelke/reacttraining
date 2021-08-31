@@ -1,29 +1,26 @@
 import React, {useContext, useEffect} from 'react';
 import {StyleSheet, View, Text, Button} from 'react-native';
 import PropTypes from 'prop-types';
-import {MainContext} from '../contexts/MainContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {MainContext} from '../contexts/MainContext';
 
-const Login = ({navigation}) => {
+const Login = (props) => {
   // props is needed for navigation
-  const {isLoggedIn, setIsLoggedIn} = useContext(MainContext);
+  const [isLoggedIn, setIsLoggedIn] = useContext(MainContext);
   console.log('Login isLoggedIn', isLoggedIn);
 
   const logIn = async () => {
     setIsLoggedIn(true);
-    console.log(
-      'login asyncstorage token',
-      await AsyncStorage.setItem('userToken', 'valid token value')
-    );
-    navigation.navigate('Home');
+    await AsyncStorage.setItem('userToken', 'valid token value');
+    props.navigation.navigate('Home');
   };
 
   const getToken = async () => {
     const userToken = await AsyncStorage.getItem('userToken');
     console.log('logIn asyncstorage token:', userToken);
     if (userToken === 'valid token value') {
-      //setIsLoggedIn(true);
-      navigation.navigate('Home');
+      setIsLoggedIn(true);
+      props.navigation.navigate('Home');
     }
   };
 
