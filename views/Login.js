@@ -4,6 +4,7 @@ import PropTypes from 'prop-types';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {MainContext} from '../contexts/MainContext';
 import {useLogin, useUser} from '../hooks/ApiHooks';
+import RegisterForm from '../components/RegisterForm';
 
 const Login = ({navigation}) => {
   const {setIsLoggedIn} = useContext(MainContext);
@@ -42,15 +43,14 @@ const Login = ({navigation}) => {
 
   useEffect(() => {
     getToken();
-    if (isLoggedIn) {
-      navigation.navigate('Home');
-    }
   }, []);
 
   return (
     <View style={styles.container}>
       <Text>Login</Text>
-      <Button title="Sign in!" onPress={logIn} />
+
+      <RegisterForm navigation={navigation}></RegisterForm>
+      <Button title="Sign in!" onPress={doLogin} />
     </View>
   );
 };

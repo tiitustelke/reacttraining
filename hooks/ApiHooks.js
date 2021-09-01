@@ -67,7 +67,10 @@ const useUser = () => {
       console.log('checkToken error', error);
     }
   };
-  return {checkToken};
+
+  const register = async (token) => {
+
+  };
 };
 
 export {useMedia, useLogin, useUser};
