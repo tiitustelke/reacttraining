@@ -17,8 +17,9 @@ const Login = ({navigation}) => {
     console.log('logIn asyncstorage token:', userToken);
     if (userToken) {
       const userInfo = await checkToken(userToken);
+      console.log(userInfo);
       if (userInfo.user_id) {
-        setUser(userInfo.user); // save user info to maincontext
+        setUser(userInfo); // save user info to maincontext
         setIsLoggedIn(true);
       }
     }
