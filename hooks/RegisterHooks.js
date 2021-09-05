@@ -1,4 +1,3 @@
-// RegisterHooks.js:
 import {useState} from 'react';
 
 const useSignUpForm = (callback) => {

@@ -4,13 +4,12 @@ import {StyleSheet, SafeAreaView, Text, Button} from 'react-native';
 import {MainContext} from '../contexts/MainContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const Profile = ({navigation}) => {
+const Profile = (props) => {
   const {isLoggedIn, setIsLoggedIn} = useContext(MainContext);
   console.log('profile', isLoggedIn);
   const logout = async () => {
-    setIsLoggedIn(false);
     await AsyncStorage.clear();
-    navigation.navigate('Login');
+    setIsLoggedIn(false);
   };
   return (
     <SafeAreaView style={styles.container}>
@@ -30,6 +29,8 @@ const styles = StyleSheet.create({
   },
 });
 
-Profile.propTypes = {};
+Profile.propTypes = {
+  navigation: PropTypes.object,
+};
 
 export default Profile;
