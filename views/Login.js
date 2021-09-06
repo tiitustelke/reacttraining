@@ -23,6 +23,8 @@ const Login = ({navigation}) => {
         setUser(userInfo); // save user info to maincontext
         setIsLoggedIn(true);
       }
+    } else {
+      AsyncStorage.clear();
     }
   };
 
