@@ -1,6 +1,7 @@
 import React, {useContext, useEffect, useState} from 'react';
 import PropTypes from 'prop-types';
-import {StyleSheet, SafeAreaView, Text, Button} from 'react-native';
+import {StyleSheet, SafeAreaView} from 'react-native';
+import {Button, Text} from 'react-native-elements';
 import {MainContext} from '../contexts/MainContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {Image} from 'react-native-elements';
