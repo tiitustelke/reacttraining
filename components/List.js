@@ -1,7 +1,8 @@
 import React from 'react';
 import {FlatList} from 'react-native';
 import {useMedia} from '../hooks/ApiHooks';
-import ListItem from './ListItem';
+// import {ListItem as NBListItem} from 'react-native-elements';
+import NBListItem from './NBListItem';
 import PropTypes from 'prop-types';
 
 const List = ({navigation}) => {
@@ -11,7 +12,7 @@ const List = ({navigation}) => {
     <FlatList
       data={mediaArray}
       renderItem={({item}) => (
-        <ListItem singleMedia={item} navigation={navigation} />
+        <NBListItem singleMedia={item} navigation={navigation} />
       )}
       keyExtractor={(item, index) => index.toString()}
     />
