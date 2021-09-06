@@ -3,11 +3,13 @@ import PropTypes from 'prop-types';
 import {StyleSheet, SafeAreaView, View} from 'react-native';
 import {Text, Image, Icon} from 'react-native-elements';
 import {uploadsUrl} from '../utils/variables';
-import {DateTime} from 'luxon';
-// import 'intl/locale-data/jsonp/fi-FI';
+import Intl from 'intl';
+import 'intl/locale-data/jsonp/fi-FI';
 
 const Single = ({route}) => {
   const {params} = route;
+  const options = {month: 'long', day: 'numeric', year: 'numeric'};
+  const dateTimeFormat = new Intl.DateTimeFormat('fi-FI', options);
   return (
     <SafeAreaView style={styles.safeContainer}>
       <Image
@@ -24,11 +26,7 @@ const Single = ({route}) => {
         <Text>{params.description}</Text>
       </View>
       <Text>by {params.user_id}</Text>
-      <Text>
-        {DateTime.fromISO(params.time_added)
-          .setLocale('fi')
-          .toLocaleString({month: 'long', day: 'numeric', year: 'numeric'})}
-      </Text>
+      <Text>{dateTimeFormat.format(new Date())}</Text>
       <Text>type: {params.media_type}</Text>
     </SafeAreaView>
   );

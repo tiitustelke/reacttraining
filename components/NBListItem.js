@@ -22,6 +22,7 @@ const NBListItem = ({singleMedia, navigation}) => {
     </TouchableOpacity>
   );
 };
+
 NBListItem.propTypes = {
   singleMedia: PropTypes.object.isRequired,
   navigation: PropTypes.object.isRequired,
