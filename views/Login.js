@@ -1,30 +1,30 @@
-import React, {useContext, useEffect} from 'react';
+/* eslint-disable no-undef */
+import React, {useContext, useEffect, useState} from 'react';
 import {StyleSheet, KeyboardAvoidingView, Platform} from 'react-native';
-import {Text} from 'react-native-elements';
 import PropTypes from 'prop-types';
 import {MainContext} from '../contexts/MainContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useUser} from '../hooks/ApiHooks';
 import RegisterForm from '../components/RegisterForm';
 import LoginForm from '../components/LoginForm';
+import {Card, ListItem, Text} from 'react-native-elements';
 
 const Login = ({navigation}) => {
   const {setIsLoggedIn, setUser} = useContext(MainContext);
   const {checkToken} = useUser();
+  const [registerFormToggle, setRegisterFormToggle] = useState(false);
   // console.log('Login isLoggedIn', isLoggedIn);
 
   const getToken = async () => {
     const userToken = await AsyncStorage.getItem('userToken');
+    AsyncStorage.clear();
     console.log('logIn asyncstorage token:', userToken);
     if (userToken) {
       const userInfo = await checkToken(userToken);
-      console.log(userInfo);
       if (userInfo.user_id) {
-        setUser(userInfo); // save user info to maincontext
+        setUser(userInfo);
         setIsLoggedIn(true);
       }
-    } else {
-      AsyncStorage.clear();
     }
   };
 
@@ -37,16 +37,33 @@ const Login = ({navigation}) => {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={styles.container}
     >
-      <Text h2 h2Style={styles.text}>
-        Login
-      </Text>
-
-      <LoginForm navigation={navigation} />
-
-      <Text h2 h2Style={styles.text}>
-        Register
-      </Text>
-      <RegisterForm navigation={navigation} />
+      {registerFormToggle ? (
+        <Card>
+          <Card.Divider />
+          <Card.Title h4>Register</Card.Title>
+          <RegisterForm navigation={navigation} />
+        </Card>
+      ) : (
+        <Card>
+          <Card.Title h4>Login</Card.Title>
+          <LoginForm navigation={navigation} />
+        </Card>
+      )}
+      {/* TODO: add link/button & event handler to change state: setRegformtoggle(!regformtoggle);  */}
+      <ListItem
+        onPress={() => {
+          setRegisterFormToggle(!registerFormToggle);
+        }}
+      >
+        <ListItem.Content>
+          <Text style={styles.text}>
+            {registerFormToggle
+              ? 'Already registered? Login here'
+              : 'No account? Register here.'}
+          </Text>
+        </ListItem.Content>
+        <ListItem.Chevron />
+      </ListItem>
     </KeyboardAvoidingView>
   );
 };
@@ -56,9 +73,10 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
   },
-  text: {
-    textAlign: 'center',
-    fontWeight: 'bold',
+  image: {
+    flex: 1,
+    resizeMode: 'cover',
+    justifyContent: 'center',
   },
 });
 
