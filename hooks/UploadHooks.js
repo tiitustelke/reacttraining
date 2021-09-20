@@ -6,12 +6,12 @@ const useUploadForm = (callback) => {
     description: '',
   });
 
-  const handleInputChange = (title, text) => {
+  const handleInputChange = (name, text) => {
     // console.log(name, text);
     setInputs((inputs) => {
       return {
         ...inputs,
-        [title]: text,
+        [name]: text,
       };
     });
   };

@@ -1,52 +1,43 @@
 import React from 'react';
+import {StyleSheet, ActivityIndicator} from 'react-native';
 import PropTypes from 'prop-types';
-import {StyleSheet, SafeAreaView, View} from 'react-native';
-import {Text, Image, Icon} from 'react-native-elements';
 import {uploadsUrl} from '../utils/variables';
-import Intl from 'intl';
-import 'intl/locale-data/jsonp/fi-FI';
+import {DateTime} from 'luxon';
+import {Card, ListItem, Text} from 'react-native-elements';
 
 const Single = ({route}) => {
   const {params} = route;
-  const options = {month: 'long', day: 'numeric', year: 'numeric'};
-  const dateTimeFormat = new Intl.DateTimeFormat('fi-FI', options);
   return (
-    <SafeAreaView style={styles.safeContainer}>
-      <Image
-        style={{width: 300, height: 300}}
+    <Card>
+      <Card.Title h4>{params.title}</Card.Title>
+      <Card.Title>
+        {DateTime.fromISO(params.time_added)
+          .setLocale('fi')
+          .toLocaleString({month: 'long', day: 'numeric', year: 'numeric'})}
+      </Card.Title>
+      <Card.Divider />
+      <Card.Image
         source={{uri: uploadsUrl + params.filename}}
+        style={styles.image}
+        PlaceholderContent={<ActivityIndicator />}
       />
-
-      <Text h2 h2Style={styles.header}>
-        {params.title}
-      </Text>
-
-      <View style={styles.container}>
-        <Icon name="image" />
-        <Text>{params.description}</Text>
-      </View>
-      <Text>by {params.user_id}</Text>
-      <Text>{dateTimeFormat.format(new Date())}</Text>
-      <Text>type: {params.media_type}</Text>
-    </SafeAreaView>
+      <Card.Divider />
+      <Text style={styles.description}>{params.description}</Text>
+      <ListItem>
+        <Text>Ownername</Text>
+      </ListItem>
+    </Card>
   );
 };
 
 const styles = StyleSheet.create({
-  header: {
-    margin: 30,
+  image: {
+    width: '100%',
+    height: undefined,
+    aspectRatio: 1,
   },
-  container: {
-    display: 'flex',
-    backgroundColor: '#fff',
-    flexDirection: 'row',
-  },
-  safeContainer: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingTop: 40,
+  description: {
+    marginBottom: 10,
   },
 });
 

@@ -1,3 +1,5 @@
+/* eslint-disable react/prop-types */
+/* eslint-disable react/display-name */
 import React, {useContext} from 'react';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {NavigationContainer} from '@react-navigation/native';
@@ -15,7 +17,6 @@ const Stack = createNativeStackNavigator();
 
 const TabScreen = () => {
   return (
-    // TODO: move content of <NavigationContainer> here
     <Tab.Navigator
       screenOptions={({route}) => ({
         tabBarIcon: ({color, size}) => {
@@ -51,7 +52,9 @@ const StackScreen = () => {
           <Stack.Screen
             name="Front"
             component={TabScreen}
-            options={{headerShown: false}}
+            options={{
+              headerShown: false,
+            }}
           />
           <Stack.Screen name="Single" component={Single} />
         </>
