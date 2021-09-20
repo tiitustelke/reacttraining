@@ -1,29 +1,59 @@
 /* eslint-disable no-undef */
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useContext} from 'react';
 import PropTypes from 'prop-types';
-import {View, Platform} from 'react-native';
+import {View, Platform, ActivityIndicator, Alert} from 'react-native';
 import UploadForm from '../components/UploadForm';
 import {Button, Image} from 'react-native-elements';
 import useUploadForm from '../hooks/UploadHooks';
 import * as ImagePicker from 'expo-image-picker';
-import {useMedia} from '../hooks/ApiHooks';
+import {useMedia, useTag} from '../hooks/ApiHooks';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {appID} from '../utils/variables';
+import {MainContext} from '../contexts/MainContext';
 
-const Upload = (props) => {
+const Upload = ({navigation}) => {
   const [image, setImage] = useState(require('../assets/icon.png'));
-  const [type, setType] = useState('');
   const {inputs, handleInputChange} = useUploadForm();
-  const {uploadMedia} = useMedia();
+  const {uploadMedia, loading} = useMedia();
+  const {addTag} = useTag();
+  const {update, setUpdate} = useContext(MainContext);
 
   const doUpload = async () => {
     const filename = image.uri.split('/').pop();
+    // Infer the type of the image
+    const match = /\.(\w+)$/.exec(filename);
+    let type = match ? `image/${match[1]}` : `image`;
+    if (type === 'image/jpg') type = 'image/jpeg';
     const formData = new FormData();
     formData.append('file', {uri: image.uri, name: filename, type});
     formData.append('title', inputs.title);
     formData.append('description', inputs.description);
     // console.log('doUpload', formData);
-    const userToken = await AsyncStorage.getItem('userToken');
-    uploadMedia(formData, userToken);
+    try {
+      const userToken = await AsyncStorage.getItem('userToken');
+      const result = await uploadMedia(formData, userToken);
+      // console.log('doUpload', result);
+      const tagResult = await addTag(result.file_id, appID, userToken);
+      // console.log('doUpload addTag', tagResult);
+      if (tagResult.message) {
+        Alert.alert(
+          'Upload',
+          result.message,
+          [
+            {
+              text: 'Ok',
+              onPress: () => {
+                setUpdate(update + 1);
+                navigation.navigate('Home');
+              },
+            },
+          ],
+          {cancelable: false}
+        );
+      }
+    } catch (e) {
+      console.log('doUpload error', e.message);
+    }
   };
 
   useEffect(() => {
@@ -50,7 +80,6 @@ const Upload = (props) => {
 
     if (!result.cancelled) {
       setImage({uri: result.uri});
-      setType(result.type);
     }
   };
 
@@ -62,11 +91,15 @@ const Upload = (props) => {
         title="Upload"
         handleSubmit={doUpload}
         handleInputChange={handleInputChange}
+        loading={loading}
       />
+      {loading && <ActivityIndicator />}
     </View>
   );
 };
 
-Upload.propTypes = {};
+Upload.propTypes = {
+  navigation: PropTypes.object.isRequired,
+};
 
 export default Upload;

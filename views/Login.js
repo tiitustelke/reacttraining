@@ -7,6 +7,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useUser} from '../hooks/ApiHooks';
 import RegisterForm from '../components/RegisterForm';
 import LoginForm from '../components/LoginForm';
+import {ImageBackground} from 'react-native';
 import {Card, ListItem, Text} from 'react-native-elements';
 
 const Login = ({navigation}) => {
@@ -19,10 +20,14 @@ const Login = ({navigation}) => {
     const userToken = await AsyncStorage.getItem('userToken');
     console.log('logIn asyncstorage token:', userToken);
     if (userToken) {
-      const userInfo = await checkToken(userToken);
-      if (userInfo.user_id) {
-        setUser(userInfo);
-        setIsLoggedIn(true);
+      try {
+        const userInfo = await checkToken(userToken);
+        if (userInfo.user_id) {
+          setUser(userInfo);
+          setIsLoggedIn(true);
+        }
+      } catch (e) {
+        console.log('getToken', e.message);
       }
     }
   };
@@ -36,33 +41,38 @@ const Login = ({navigation}) => {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={styles.container}
     >
-      {registerFormToggle ? (
-        <Card>
-          <Card.Divider />
-          <Card.Title h4>Register</Card.Title>
-          <RegisterForm navigation={navigation} />
-        </Card>
-      ) : (
-        <Card>
-          <Card.Title h4>Login</Card.Title>
-          <LoginForm navigation={navigation} />
-        </Card>
-      )}
-      {/* TODO: add link/button & event handler to change state: setRegformtoggle(!regformtoggle);  */}
-      <ListItem
-        onPress={() => {
-          setRegisterFormToggle(!registerFormToggle);
-        }}
+      <ImageBackground
+        source={require('../assets/splash.png')}
+        style={styles.image}
       >
-        <ListItem.Content>
-          <Text style={styles.text}>
-            {registerFormToggle
-              ? 'Already registered? Login here'
-              : 'No account? Register here.'}
-          </Text>
-        </ListItem.Content>
-        <ListItem.Chevron />
-      </ListItem>
+        {registerFormToggle ? (
+          <Card>
+            <Card.Divider />
+            <Card.Title h4>Register</Card.Title>
+            <RegisterForm navigation={navigation} />
+          </Card>
+        ) : (
+          <Card>
+            <Card.Title h4>Login</Card.Title>
+            <LoginForm navigation={navigation} />
+          </Card>
+        )}
+        {/* TODO: add link/button & event handler to change state: setRegformtoggle(!regformtoggle);  */}
+        <ListItem
+          onPress={() => {
+            setRegisterFormToggle(!registerFormToggle);
+          }}
+        >
+          <ListItem.Content>
+            <Text style={styles.text}>
+              {registerFormToggle
+                ? 'Already registered? Login here'
+                : 'No account? Register here.'}
+            </Text>
+          </ListItem.Content>
+          <ListItem.Chevron />
+        </ListItem>
+      </ImageBackground>
     </KeyboardAvoidingView>
   );
 };
