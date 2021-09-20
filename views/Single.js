@@ -2,19 +2,18 @@ import React from 'react';
 import {StyleSheet, ActivityIndicator} from 'react-native';
 import PropTypes from 'prop-types';
 import {uploadsUrl} from '../utils/variables';
-import {DateTime} from 'luxon';
 import {Card, ListItem, Text} from 'react-native-elements';
+import Intl from 'intl';
+import 'intl/locale-data/jsonp/fi-FI';
 
 const Single = ({route}) => {
   const {params} = route;
+  const options = {month: 'long', day: 'numeric', year: 'numeric'};
+  const dateTimeFormat = new Intl.DateTimeFormat('fi-FI', options);
   return (
     <Card>
       <Card.Title h4>{params.title}</Card.Title>
-      <Card.Title>
-        {DateTime.fromISO(params.time_added)
-          .setLocale('fi')
-          .toLocaleString({month: 'long', day: 'numeric', year: 'numeric'})}
-      </Card.Title>
+      <Card.Title>{dateTimeFormat.format(new Date())}</Card.Title>
       <Card.Divider />
       <Card.Image
         source={{uri: uploadsUrl + params.filename}}
