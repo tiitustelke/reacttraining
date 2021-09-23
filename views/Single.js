@@ -1,13 +1,20 @@
-import React, {useEffect, useRef, useState} from 'react';
-import {StyleSheet, ActivityIndicator, Button} from 'react-native';
+import React, {useEffect, useState} from 'react';
+import {StyleSheet, ActivityIndicator, TouchableOpacity} from 'react-native';
 import PropTypes from 'prop-types';
 import {uploadsUrl} from '../utils/variables';
-import {Card, ListItem, Text} from 'react-native-elements';
-import Intl from 'intl';
-import 'intl/locale-data/jsonp/fi-FI';
-import {Audio, Video} from 'expo-av';
-import {useUser} from '../hooks/ApiHooks';
+import {
+  Card,
+  ListItem,
+  Text,
+  Button,
+  Icon,
+  Avatar,
+} from 'react-native-elements';
+import {Video, Audio} from 'expo-av';
+import {useTag, useUser, useFavourites} from '../hooks/ApiHooks';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {formatDate} from '../utils/dateFunctions';
+import * as ScreenOrientation from 'expo-screen-orientation';
 
 const Single = ({route}) => {
   const {params} = route;
@@ -15,28 +22,132 @@ const Single = ({route}) => {
   const [ownerInfo, setOwnerInfo] = useState({username: ''});
   const [likes, setLikes] = useState([]);
   const [iAmLikingIt, setIAmLikingIt] = useState(false);
-  const videoRef = useRef(null);
+  const [videoRef, setVideoRef] = useState(null);
+  const [disabled, setDisabled] = useState(false);
+  const {getFilesByTag} = useTag();
+  const {
+    getFavouritesByFileId,
+    getMyFavourites,
+    deleteFavourite,
+    addFavourite,
+  } = useFavourites();
+  const [avatar, setAvatar] = useState('http://placekitten.com/100');
 
-  const options = {month: 'long', day: 'numeric', year: 'numeric'};
-  const dateTimeFormat = new Intl.DateTimeFormat('fi-FI', options);
+  // screen orientation, show video in fullscreen when landscape
+  const handleVideoRef = (component) => {
+    setVideoRef(component);
+  };
+
+  const unlock = async () => {
+    try {
+      await ScreenOrientation.unlockAsync();
+    } catch (error) {
+      console.error('unlock', error.message);
+    }
+  };
+
+  const lock = async () => {
+    try {
+      await ScreenOrientation.lockAsync(
+        ScreenOrientation.OrientationLock.PORTRAIT_UP
+      );
+    } catch (error) {
+      console.error('lock', error.message);
+    }
+  };
+
+  const showVideoInFullscreen = async () => {
+    try {
+      if (videoRef) await videoRef.presentFullscreenPlayer();
+    } catch (error) {
+      console.error('fullscreen', error.message);
+    }
+  };
+
+  useEffect(() => {
+    unlock();
+
+    const orientSub = ScreenOrientation.addOrientationChangeListener((evt) => {
+      console.log('orientation', evt);
+      if (evt.orientationInfo.orientation > 2) {
+        // show video in fullscreen
+        showVideoInFullscreen();
+      }
+    });
+    // when leaving the component lock screen to portrait
+    return () => {
+      ScreenOrientation.removeOrientationChangeListener(orientSub);
+      lock();
+    };
+  }, [videoRef]);
+
+  // end screen orientation
 
   const getOwnerInfo = async () => {
     const token = await AsyncStorage.getItem('userToken');
     setOwnerInfo(await getUserInfo(params.user_id, token));
   };
   const getLikes = async () => {
-    // TODO: use apihooks to get likes
+    // setLikes(await getFavouritesByFileId(params.file_id));
+    // const token = await AsyncStorage.getItem('userToken');
+    // TODO: use api hooks to get favourites
     // setLikes()
     // set the value of iAmLikingIt
+  };
+  const getAvatar = async () => {
+    try {
+      const avatarList = await getFilesByTag('avatar_' + params.user_id);
+      if (avatarList.length > 0) {
+        setAvatar(uploadsUrl + avatarList.pop().filename);
+      }
+    } catch (error) {
+      console.error(error.message);
+    }
+  };
+
+  const addLike = async () => {
+    try {
+      const token = await AsyncStorage.getItem('userToken');
+      addFavourite(params.file_id, token);
+      setIAmLikingIt(true);
+    } catch (error) {
+      console.error(error.message);
+    }
+  };
+
+  const deleteLike = async () => {
+    try {
+      const token = await AsyncStorage.getItem('userToken');
+      deleteFavourite(params.file_id, token);
+      setIAmLikingIt(false);
+    } catch (error) {
+      console.error(error.message);
+    }
   };
 
   useEffect(() => {
     getOwnerInfo();
+    getAvatar();
+    getLikes();
   }, []);
+
   return (
     <Card>
-      <Card.Title h4>{params.title}</Card.Title>
-      <Card.Title>{dateTimeFormat.format(new Date())}</Card.Title>
+      <ListItem>
+        {params.media_type === 'image' && <Icon name="image" type="ionicon" />}
+        {params.media_type === 'video' && (
+          <Icon name="videocam" type="ionicon" />
+        )}
+        <ListItem.Content>
+          <ListItem.Title>{params.title}</ListItem.Title>
+          <ListItem.Subtitle>
+            {formatDate(new Date(params.time_added), 'eeee d. MMMM y')}
+          </ListItem.Subtitle>
+          <ListItem.Subtitle>
+            klo {formatDate(new Date(params.time_added), 'HH.mm')}
+          </ListItem.Subtitle>
+        </ListItem.Content>
+      </ListItem>
       <Card.Divider />
       {params.media_type === 'image' && (
         <Card.Image
@@ -46,46 +157,45 @@ const Single = ({route}) => {
         />
       )}
       {params.media_type === 'video' && (
-        /* eslint-disable prettier/prettier */
-        <Video
-          ref={videoRef}
-          style={styles.image}
-          source={{uri: uploadsUrl + params.filename}}
-          useNativeControls
-          resizeMode="contain"
-          usePoster
-          posterSource={{uri: uploadsUrl + params.screenshot}}
-        />
-        /* eslint-enable prettier/prettier */
+        <TouchableOpacity // usePoster hides video so use this to start it
+          disabled={disabled}
+          onPress={() => {
+            videoRef.playAsync();
+            setDisabled(true); // disable touchableOpacity when video is started
+          }}
+        >
+          <Video
+            ref={handleVideoRef}
+            style={styles.image}
+            source={{uri: uploadsUrl + params.filename}}
+            useNativeControls
+            resizeMode="contain"
+            usePoster
+            posterSource={{uri: uploadsUrl + params.screenshot}}
+          />
+        </TouchableOpacity>
       )}
       {params.media_type === 'audio' && (
         <>
-          <Text>Audio not supported yet :(</Text>
+          <Text>Audio not supported YET.</Text>
           <Audio></Audio>
         </>
       )}
-
       <Card.Divider />
       <Text style={styles.description}>{params.description}</Text>
       <ListItem>
+        <Avatar source={{uri: avatar}} />
         <Text>{ownerInfo.username}</Text>
       </ListItem>
       <ListItem>
+        {/* TODO: show like or dislike button depending on the current like status,
+        calculate like count for a file */}
         {iAmLikingIt ? (
-          <Button
-            title="Like"
-            onPress={() => {
-              // use apihooks to post a like
-            }}
-          />
+          <Button title="Unlike" onPress={deleteLike} />
         ) : (
-          <Button
-            title="unlike"
-            onPress={() => {
-              // use apihooks to delete a like
-            }}
-          />
+          <Button title="like" onPress={addLike} />
         )}
+        <Text>Total likes: {likes.length}</Text>
       </ListItem>
     </Card>
   );

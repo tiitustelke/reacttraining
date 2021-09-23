@@ -13,7 +13,7 @@ import {MainContext} from '../contexts/MainContext';
 
 const Upload = ({navigation}) => {
   const [image, setImage] = useState(require('../assets/icon.png'));
-  const [filetype, setFiletype] = useState();
+  const [filetype, setFiletype] = useState('');
   const {inputs, handleInputChange, setInputs} = useUploadForm();
   const {uploadMedia, loading} = useMedia();
   const {addTag} = useTag();
@@ -33,6 +33,7 @@ const Upload = ({navigation}) => {
     const match = /\.(\w+)$/.exec(filename);
     let type = match ? `${filetype}/${match[1]}` : filetype;
     if (type === 'image/jpg') type = 'image/jpeg';
+    console.log('doUpload mimetype:', type);
     const formData = new FormData();
     formData.append('file', {uri: image.uri, name: filename, type});
     formData.append('title', inputs.title);

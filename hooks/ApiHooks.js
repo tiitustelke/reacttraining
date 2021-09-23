@@ -11,8 +11,13 @@ const useMedia = (ownFiles) => {
   useEffect(() => {
     // https://scriptverse.academy/tutorials/js-self-invoking-functions.html
     (async () => {
-      setMediaArray(await loadMedia());
-      // console.log('useMedia useEffect', mediaArray);
+      try {
+        const allMedia = await loadMedia();
+        allMedia.reverse();
+        setMediaArray(allMedia);
+      } catch (e) {
+        console.log('useMedia useEffect error', e.message);
+      }
     })();
   }, [update]);
 
@@ -188,7 +193,7 @@ const useUser = () => {
     }
   };
 
-  return {checkToken, register, checkUsernameAvailable, getUserInfo};
+  return {checkToken, getUserInfo, register, checkUsernameAvailable};
 };
 
 const useTag = () => {
@@ -202,7 +207,7 @@ const useTag = () => {
     }
   };
 
-  // eslint-disable-next-line camelcase
+  /* eslint-disable camelcase */
   const addTag = async (file_id, tag, token) => {
     const options = {
       method: 'POST',
@@ -226,22 +231,70 @@ const useTag = () => {
 };
 
 const useFavourites = () => {
-  const addFavourite = async (fileId, token) => {
-    // post /favourites
+  const addFavourite = async (file_id, token) => {
+    const options = {
+      method: 'POST',
+      headers: {
+        'x-access-token': token,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({file_id}),
+    };
+    // console.log('optiot', options);
+    try {
+      const favouriteInfo = await doFetch(baseUrl + 'favourites', options);
+      return favouriteInfo;
+    } catch (error) {
+      // console.log('addTag error', error);
+      throw new Error(error.message);
+    }
   };
 
-  const deleteFavourite = async (fileId, token) => {
+  const deleteFavourite = async (file_id, token) => {
     // DELETE /favourites/file/:id
+    const options = {
+      method: 'DELETE',
+      headers: {'x-access-token': token},
+    };
+    try {
+      const deleteInfo = await doFetch(
+        baseUrl + 'favourites/file/' + file_id,
+        options
+      );
+      return deleteInfo;
+    } catch (error) {
+      // console.log('deleteFavourite error', error);
+      throw new Error(error.message);
+    }
   };
 
-  const getFavouritesByFileId = async (fileId) => {
-    // GET /favourites/file/:id
+  const getFavouritesByFileId = async (file_id) => {
+    try {
+      const favouriteInfo = await doFetch(
+        baseUrl + 'favourites/file/' + file_id
+      );
+      return favouriteInfo;
+    } catch (error) {
+      // console.log('getFavouritesByFileId error', error);
+      throw new Error(error.message);
+    }
   };
 
-  const getMyFavourites = (token) => {
-    // GET /favourites
+  const getMyFavourites = async (token) => {
+    const options = {
+      method: 'GET',
+      headers: {'x-access-token': token},
+    };
+    try {
+      const favouriteInfo = await doFetch(baseUrl + 'favourites/', options);
+      return favouriteInfo;
+    } catch (error) {
+      // console.log('getMyFavourites error', error);
+      throw new Error(error.message);
+    }
   };
 
+  /* eslint-enable camelcase */
   return {
     addFavourite,
     deleteFavourite,

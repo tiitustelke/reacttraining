@@ -14,6 +14,7 @@ const UploadForm = ({
       <Input
         autoCapitalize="none"
         placeholder="title"
+        multiline={true}
         onChangeText={(txt) => handleInputChange('title', txt)}
         value={inputs.title}
       />
