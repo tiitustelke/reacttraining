@@ -88,8 +88,15 @@ const Single = ({route}) => {
     setOwnerInfo(await getUserInfo(params.user_id, token));
   };
   const getLikes = async () => {
-    // setLikes(await getFavouritesByFileId(params.file_id));
-    // const token = await AsyncStorage.getItem('userToken');
+    setLikes(await getFavouritesByFileId(params.file_id));
+    const token = await AsyncStorage.getItem('userToken');
+    const favourites = await getMyFavourites(token);
+
+    if (favourites.some((e) => e.file_id === params.file_id)) {
+      setIAmLikingIt(true);
+    } else {
+      setIAmLikingIt(false);
+    }
     // TODO: use api hooks to get favourites
     // setLikes()
     // set the value of iAmLikingIt
